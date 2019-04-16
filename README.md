@@ -1,13 +1,12 @@
 # jalopy
 Self-driving system for Euro Truck Simulator 2
 
-## Installation (tested on Windows 10)
+## Installation (tested on Windows 10 and macOS 10.14)
 * _(optional)_ Install [Anaconda](https://anaconda.com) for ease of installation
 * _(conditional)_ If you use Visual Studio Code, add ```    "python.linting.pylintArgs": ["--extension-pkg-whitelist=cv2"]
 ``` to your ```settings.json``` file
 1. Install OpenCV with ```pip install opencv-contrib-python```
 1. Install matplotlib with ```pip install matplotlib```
-1. Install ImageGrab with ```pip install ImageGrab```
 
 ## Update history
 * TP1 : Quick demo of lane detection, working on streaming the game output to the OpenCV feed. Using personal gameplay and YouTube videos for testing purposes, transcoding on Handshake for optimal filesize and resolution.
