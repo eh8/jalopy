@@ -106,7 +106,7 @@ def displayLines(image, lines):
 
 
 def main():
-    cap = cv2.VideoCapture('./euro.mp4')
+    cap = cv2.VideoCapture('../examples/euro.mp4')
     while cap.isOpened():
         # image = cv2.imread('test_image.jpg')
         _, frame = cap.read()
