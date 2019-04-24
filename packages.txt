@@ -1,0 +1,5 @@
+opencv-contrib-python
+matplotlib
+Pillow
+mss==2.0.22
+pyautogui
