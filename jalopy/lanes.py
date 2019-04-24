@@ -23,20 +23,21 @@ def avgMB(image, lines):
     left = []
     right = []
     degree = 1
-    for line in lines:
-        x1, y1, x2, y2 = line.reshape(4)
-        parameters = np.polyfit((x1, x2), (y1, y2), degree)
-        slope = parameters[0]
-        intercept = parameters[1]
-        if slope < 0:
-            left.append((slope, intercept))
-        else:
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line.reshape(4)
+            parameters = np.polyfit((x1, x2), (y1, y2), degree)
+            slope = parameters[0]
+            intercept = parameters[1]
+            # if slope < 0:
+            #     left.append((slope, intercept))
+            # else:
             right.append((slope, intercept))
-    leftAvg = np.average(left, axis=0)
-    rightAvg = np.average(right, axis=0)
-    leftLine = coordinates(image, leftAvg)
-    rightLine = coordinates(image, rightAvg)
-    return np.array([leftLine, rightLine])
+        # leftAvg = np.average(left, axis=0)
+        rightAvg = np.average(right, axis=0)
+        # leftLine = coordinates(image, leftAvg)
+        rightLine = coordinates(image, rightAvg)
+        return np.array([rightLine])
 
 
 def cannify(image):
@@ -86,7 +87,7 @@ def houghFit(image):
     degrees = 180
     dPrecision = np.pi/degrees
     # I found that 100 works best, will fine tune later
-    threshold = 90
+    threshold = 40
     minLL = 40
     maxLG = 2
     lines = cv2.HoughLinesP(image, binSize, dPrecision, threshold,
@@ -117,7 +118,7 @@ def main():
         # averageLines = avgMB(laneImage, lines)
         lineImage = displayLines(laneImage, lines)
         superImage = cv2.addWeighted(laneImage, 0.8, lineImage, 1, 1)
-        cv2.imshow('Jalopy', superImage)
+        cv2.imshow('Jalopy', laneImage)
         if cv2.waitKey(1) & 0xFF == ord('s'):
             break
         # plt.imshow(laneImage)
