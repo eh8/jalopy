@@ -1,6 +1,7 @@
 # Eric Cheng
 
 # Imaging libraries (mss is faster than standard PIL)
+from tkinter import *
 from mss import mss
 from PIL import Image
 
@@ -33,14 +34,14 @@ pp = pprint.PrettyPrinter()
 def config():
     binSize = 1
     degree = np.pi / 180
-    minLineLength = 100
+    minLineLength = 40
     maxLineGap = 5
     return binSize, degree, minLineLength, maxLineGap
 
 ######################### User should not modify ###############################
 
 
-def drawLines(img, lines, color=[0, 255, 255], thickness=3):
+def drawLines(img, lines, color=[0, 255, 255], thickness=1):
     # if this fails, go with some default line
     try:
 
@@ -141,8 +142,8 @@ def processImage(originalImage):
     processedImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
     processedImage = cv2.Canny(processedImage, threshold1=200, threshold2=300)
     processedImage = cv2.GaussianBlur(processedImage, (5, 5), 0)
-    vertices = np.array([[0, 600], [0, 450], [300, 300], [500, 300], [800, 450],
-                         [800, 600]])
+    vertices = np.array([[0, 550], [0, 500], [300, 350], [500, 350], [800, 500],
+                         [800, 550]])
     processedImage = roi(processedImage, [vertices])
     lines = cv2.HoughLinesP(processedImage, binSize, degree, 180,
                             np.array([]), length, gap)
@@ -198,7 +199,7 @@ def boot():
             straight()
             print('straight')
 
-        cv2.imshow('Jalopy', cv2.cvtColor(newScreen, cv2.COLOR_BGR2RGB))
+        cv2.imshow('Jalopy', cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
@@ -208,8 +209,104 @@ def boot():
 
 
 def main():
-    countDown()
-    boot()
+    runJalopy()
+
+# animation
+
+
+def init(data):
+    data.mode = 0
+
+
+def mousePressed(event, data):
+    pass
+
+
+def keyPressed(event, data):
+    if event.keysym == 'h':
+        data.mode = 1
+    if event.keysym == 'x':
+        data.mode = 0
+    if event.keysym == 'e':
+        boot()
+
+
+def timerFired(data):
+    pass
+
+
+def redrawAll(canvas, data):
+    if data.mode == 0:
+        canvas.create_text(50, 50, text="Jalopy",
+                           font="Sans 40 bold", justify="left", anchor="nw")
+        canvas.create_text(50, 150, text="Considered safe in 4+ EU countries",
+                           font="Sans 20 bold", justify="left", anchor="nw")
+        canvas.create_text(50, 300, text="Play now (press E)",
+                           font="Sans 20 bold", justify="left", anchor="nw")
+        canvas.create_text(50, 350, text="Help (press H)",
+                           font="Sans 20 bold", justify="left", anchor="nw")
+    elif data.mode == 1:
+        message = "Did you really think that the robots would never come for your comfortable, well-paid job\nas a European truck driver? You dare speak out against the souless authority of the\nmachine? You thought you were safe behind the wheel.\n\nJalopy is a simple self-driving algorithm. Just make sure Euro Truck Simulator 2 is\nrunning in a 800x600 window at the top-left corner of your screen. Return to the main menu\nand press E.\n\nJalopy will take from there."
+
+        canvas.create_text(50, 50, text="Help",
+                           font="Sans 40 bold", justify="left", anchor="nw")
+        canvas.create_text(50, 150, text="You fool. You absolute buffoon.",
+                           font="Sans 20 bold", justify="left", anchor="nw")
+        canvas.create_text(600, 50, text="Press X for main menu",
+                           font="Sans 10 bold", fill="gray", justify="left", anchor="nw")
+        canvas.create_text(50, 250, text=message,
+                           font="Sans 10 bold", justify="left", anchor="nw")
+
+#################################################################
+# use the run function as-is
+#################################################################
+
+
+def runJalopy(width=800, height=600):
+    def redrawAllWrapper(canvas, data):
+        canvas.delete(ALL)
+        canvas.create_rectangle(0, 0, data.width, data.height,
+                                fill='white', width=0)
+        redrawAll(canvas, data)
+        canvas.update()
+
+    def mousePressedWrapper(event, canvas, data):
+        mousePressed(event, data)
+        redrawAllWrapper(canvas, data)
+
+    def keyPressedWrapper(event, canvas, data):
+        keyPressed(event, data)
+        redrawAllWrapper(canvas, data)
+
+    def timerFiredWrapper(canvas, data):
+        timerFired(data)
+        redrawAllWrapper(canvas, data)
+        # pause, then call timerFired again
+        canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+    # Set up data and call init
+
+    class Struct(object):
+        pass
+    data = Struct()
+    data.width = width
+    data.height = height
+    data.timerDelay = 100  # milliseconds
+    root = Tk()
+    root.title('Jalopy')
+    init(data)
+    # create the root and the canvas
+    canvas = Canvas(root, width=data.width, height=data.height)
+    canvas.configure(bd=0, highlightthickness=0)
+    canvas.pack()
+    # set up events
+    root.bind("<Button-1>", lambda event:
+              mousePressedWrapper(event, canvas, data))
+    root.bind("<Key>", lambda event:
+              keyPressedWrapper(event, canvas, data))
+    timerFiredWrapper(canvas, data)
+    # and launch the app
+    root.mainloop()  # blocks until window is closed
+    print("Vroom vroom")
 
 
 if __name__ == '__main__':
