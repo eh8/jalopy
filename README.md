@@ -9,6 +9,7 @@ Self-driving system for Euro Truck Simulator 2
 1. Install OpenCV with ```pip install opencv-contrib-python```
 1. Install matplotlib with ```pip install matplotlib```
 1. Install Python Imaging Library with ```pip install Pillow```
+1. Install mss (multiple screenshot) with ```pip install mss==2.0.22```
 
 ## How to run Jalopy
 * _(optional)_ If you are running Jalopy on laptop, you probably want to run plug in your computer to prevent battery consumption conservation from slowing down the game/OpenCV/Jalopy
