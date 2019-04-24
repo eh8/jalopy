@@ -91,8 +91,8 @@ def drawLines(img, lines, color=[0, 255, 255], thickness=1):
                 for other_ms in final_lanes_copy:
 
                     if not found_copy:
-                        if abs(other_ms*1.2) > abs(m) > abs(other_ms*0.8):
-                            if abs(final_lanes_copy[other_ms][0][1]*1.2) > abs(b) > abs(final_lanes_copy[other_ms][0][1]*0.8):
+                        if abs(other_ms*1.1) > abs(m) > abs(other_ms*0.9):
+                            if abs(final_lanes_copy[other_ms][0][1]*1.1) > abs(b) > abs(final_lanes_copy[other_ms][0][1]*0.9):
                                 final_lanes[other_ms].append([m, b, line])
                                 found_copy = True
                                 break
