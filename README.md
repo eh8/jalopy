@@ -17,6 +17,7 @@ Self-driving system for Euro Truck Simulator 2
 
 ## Update history
 * TP1 : Quick demo of lane detection, working on streaming the game output to the OpenCV feed. Using personal gameplay and YouTube videos for testing purposes, transcoding on Handshake for optimal filesize and resolution.
+* TP2 : Working self-driving demo with lane-slope heuristic. However, this heuristic is awful and should be discarded in favor of a cNN (coming TP3)
 
 ## Helpful links for learning
 * [MIT OpenCourseWare](https://www.youtube.com/watch?v=1L0TKZQcUtA)
