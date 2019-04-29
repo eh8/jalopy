@@ -1,3 +1,7 @@
+# CODE CITATION:
+# Inspired from this post
+# https://stackoverflow.com/questions/11906925/python-simulate-keydown
+
 import ctypes
 import time
 
