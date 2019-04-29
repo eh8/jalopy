@@ -20,6 +20,7 @@ Self-driving system for Euro Truck Simulator 2
 * TP2 : Working self-driving demo with lane-slope heuristic. However, this heuristic is awful and should be discarded in favor of a cNN (coming TP3)
 
 ## Helpful links for learning
+* [Win32 API](http://timgolden.me.uk/pywin32-docs/contents.html)
 * [MIT OpenCourseWare](https://www.youtube.com/watch?v=1L0TKZQcUtA)
 * [Hough lines](https://en.wikipedia.org/wiki/Hough_transform)
 * [Hough lines implemented in OpenCV](https://docs.opencv.org/2.4.13.7/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.html)

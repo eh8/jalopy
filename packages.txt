@@ -3,3 +3,5 @@ matplotlib
 Pillow
 mss==2.0.22
 pyautogui
+pypiwin32
+sklearn
