@@ -3,9 +3,10 @@ Self-driving system for Euro Truck Simulator 2
 
 ## Can I run it?
 * _(note)_ Windows comes packaged with something called a [Desktop Duplication API](https://docs.microsoft.com/en-us/windows/desktop/direct3ddxgi/desktop-dup-api) that uses fast DXGI and Direct3D libraries to produce fast lighning-fast screenshots. I use a package called ```D3DShot``` for this very purpose. It can take 800x600 screenshots at around 50 FPS. ```MSS``` is also pretty good, and is a great generic solution for MacOS and Linux, but beware, I haven't yet tested those platforms for complete compatibility with Jalopy.
+* Windows >8.1 (I'll figure out how to send key inputs to Unix operating systems later)
 * Python >3.6 (64-bit installation only)
 
-## Installation (tested on Windows 10 and macOS 10.14)
+## Installation (tested on Windows 10)
 * _(optional)_ Install [Anaconda](https://anaconda.com) for ease of installation
 * _(conditional)_ If you use Visual Studio Code, add ```    "python.linting.pylintArgs": ["--extension-pkg-whitelist=cv2"]
 ``` to your ```settings.json``` file
@@ -14,8 +15,15 @@ Self-driving system for Euro Truck Simulator 2
 
 ## How to run Jalopy
 * _(optional)_ If you are running Jalopy on laptop, you probably want to plug in your computer to prevent battery consumption conservation from slowing down the game/OpenCV/Jalopy
-1. Run Euro Truck Simulator 2 at 800x600 resolution
-1. Place the window in the upper left corner of your screen
+<!-- 1. Run Euro Truck Simulator 2 at 800x600 resolution by changing your ```config.cfg``` file by modifying this lines to the specified values:
+~~~
+uset r_fullscreen "0"
+uset r_mode_height "600"
+uset r_mode_width "800"
+~~~
+
+Ideally, Jalopy could do this for you  -->
+1. Place Euro Truck Simulator 2 to the upper left corner of your screen
 1. Navigate to the main directory with ```cd jalopy```
 1. Run the main .py file with ```python main.py```
 
