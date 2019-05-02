@@ -17,12 +17,12 @@ from sys import platform
 import cv2
 import d3dshot
 
-from processFrame import *
-
+from processFrame import Frame
+from findLanes import *
 from keyPressed import *
 from steerTruck import *
+# from drawLanes import draw_lane
 
-# Initlize D3Dshot given user operating system
 d = d3dshot.create(capture_output='numpy')
 
 
@@ -33,15 +33,16 @@ def drive():
             # Remove last and now in final version
             last = time.time()
             screen = d.screenshot(region=(0, 35, 800, 600))
-            newFrame = Frame(screen)
-            newFrame = newFrame.transform()
-            cv2.imshow('Jalopy', cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
+
+            lanes = processImage(screen)
+
+            cv2.imshow('Jalopy', lanes)
             now = time.time()
             print("Windows took %f seconds" % (now - last))
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
                 break
-            # plt.imshow(screen)
+            # plt.imshow(newFrame)
             # if plt.show() & 0xFF == ord('s'):
             #     break
 

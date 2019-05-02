@@ -9,8 +9,8 @@ class Frame(object):
         self.leftLane = 375
         self.rightLane = 425
         self.screen = np.float32(
-            [[0, self.imgHeight], [self.imgWidth, self.imgHeight],
-             [0, 0], [self.imgWidth, 0]])
+            [[0, self.imgHeight+315], [self.imgWidth, self.imgHeight+315],
+             [0, 315], [self.imgWidth, 315]])
         self.distortion = np.float32(
             [[self.leftLane, self.imgHeight], [self.rightLane, self.imgHeight],
              [0, 0], [self.imgWidth, 0]])
@@ -36,11 +36,11 @@ class Frame(object):
 
     def transform(self):
         # Apply the warp mask onto the image
-        self.img = self.img[315:(315+self.imgHeight), 0:self.imgWidth]
+        # self.img = self.img[315:(315+self.imgHeight), 0:self.imgWidth]
         imgSize = (self.imgWidth, self.imgHeight)
 
         matrix = cv2.getPerspectiveTransform(self.screen, self.distortion)
         warped = cv2.warpPerspective(self.img, matrix, imgSize)
         warped = self.sharpenFilter(warped)
         warped = self.contrastFilter(warped, 1.0)
-        return warped
+        return warped, matrix
