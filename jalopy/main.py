@@ -34,9 +34,10 @@ def drive():
             last = time.time()
             screen = d.screenshot(region=(0, 35, 800, 600))
 
-            lanes = processImage(screen)
+            lanes = Frame(screen)
+            lanes = lanes.pipeline()
 
-            cv2.imshow('Jalopy', lanes)
+            cv2.imshow('Jalopy', cv2.cvtColor(lanes, cv2.COLOR_BGR2RGB))
             now = time.time()
             print("Windows took %f seconds" % (now - last))
             if cv2.waitKey(25) & 0xFF == ord('q'):

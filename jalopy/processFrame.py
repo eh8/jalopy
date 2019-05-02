@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+
 class Frame(object):
     def __init__(self, img):
         self.img = img
@@ -44,3 +45,34 @@ class Frame(object):
         warped = self.sharpenFilter(warped)
         warped = self.contrastFilter(warped, 1.0)
         return warped, matrix
+
+    def pipeline(self, s_thresh=(125, 255), sx_thresh=(10, 100),
+                 R_thresh=(200, 255), sobel_kernel=3):
+
+        warp, matrix = self.transform()
+        R = warp[:, :, 0]
+
+        hls = cv2.cvtColor(warp, cv2.COLOR_RGB2HLS).astype(np.float)
+        lChannel = hls[:, :, 1]
+        sChannel = hls[:, :, 2]
+
+        sobelx = cv2.Sobel(lChannel, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+        abs_sobelx = np.absolute(sobelx)
+        scaled_sobelx = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
+
+        sxbinary = np.zeros_like(scaled_sobelx)
+        sxbinary[(scaled_sobelx >= sx_thresh[0])
+                 & (scaled_sobelx <= sx_thresh[1])] = 1
+
+        rBinary = np.zeros_like(R)
+        rBinary[(R >= R_thresh[0]) & (R <= R_thresh[1])] = 1
+
+        sBinary = np.zeros_like(sChannel)
+        sBinary[(sChannel >= s_thresh[0]) & (sChannel <= s_thresh[1])] = 1
+
+        compositeImage = np.zeros_like(sxbinary)
+        compositeImage[((sBinary == 1) & (sxbinary == 1))
+                       | ((sxbinary == 1) & (rBinary == 1))
+                       | ((sBinary == 1) & (rBinary == 1))] = 1
+
+        return compositeImage

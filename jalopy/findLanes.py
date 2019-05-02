@@ -49,37 +49,6 @@ class Line():
             return lineFit
 
 
-def pipeline(img, s_thresh=(125, 255), sx_thresh=(10, 100),
-             R_thresh=(200, 255), sobel_kernel=3):
-
-    R = img[:, :, 0]
-
-    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float)
-    lChannel = hls[:, :, 1]
-    sChannel = hls[:, :, 2]
-
-    sobelx = cv2.Sobel(lChannel, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
-    abs_sobelx = np.absolute(sobelx)
-    scaled_sobelx = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
-
-    sxbinary = np.zeros_like(scaled_sobelx)
-    sxbinary[(scaled_sobelx >= sx_thresh[0])
-             & (scaled_sobelx <= sx_thresh[1])] = 1
-
-    rBinary = np.zeros_like(R)
-    rBinary[(R >= R_thresh[0]) & (R <= R_thresh[1])] = 1
-
-    sBinary = np.zeros_like(sChannel)
-    sBinary[(sChannel >= s_thresh[0]) & (sChannel <= s_thresh[1])] = 1
-
-    compositeImage = np.zeros_like(sxbinary)
-    compositeImage[((sBinary == 1) & (sxbinary == 1))
-                   | ((sxbinary == 1) & (rBinary == 1))
-                   | ((sBinary == 1) & (rBinary == 1))] = 1
-
-    return compositeImage
-
-
 def slidingSensor(curX, margin, minpix, nonzerox, nonzeroy,
                   winYBottom, winYTop, winMax, counter, side):
 
@@ -260,11 +229,9 @@ def drawLines(img, leftLine, rightLine):
 
     expectedYCurve = np.max(fity)
     leftR = (
-        (1 + (2*leftFit[0]*expectedYCurve + leftFit[1])**2)**1.5) /
-    np.absolute(2*leftFit[0])
+        (1 + (2*leftFit[0]*expectedYCurve + leftFit[1])**2)**1.5) / np.absolute(2*leftFit[0])
     rightR = (
-        (1 + (2*rightFit[0]*expectedYCurve + rightFit[1])**2)**1.5) /
-    np.absolute(2*rightFit[0])
+        (1 + (2*rightFit[0]*expectedYCurve + rightFit[1])**2)**1.5) / np.absolute(2*rightFit[0])
 
     leftFitCritical = np.polyfit(leftLine.allY*ym_per_pix,
                                  leftLine.allX*xm_per_pix, 2)
@@ -273,12 +240,10 @@ def drawLines(img, leftLine, rightLine):
 
     # Calculate the new radii of curvature
     leftR = ((1 + (2*leftFitCritical[0]*expectedYCurve*ym_per_pix +
-                   leftFitCritical[1])**2)**1.5) /
-    np.absolute(2*leftFitCritical[0])
+                   leftFitCritical[1])**2)**1.5) / np.absolute(2*leftFitCritical[0])
 
     rightR = ((1 + (2*rightFitCritical[0]*expectedYCurve*ym_per_pix +
-                    rightFitCritical[1])**2)**1.5) /
-    np.absolute(2*rightFitCritical[0])
+                    rightFitCritical[1])**2)**1.5) / np.absolute(2*rightFitCritical[0])
 
     avg_rad = round(np.mean([leftR, rightR]), 0)
     rad_text = 'Radius of Curvature = {}(m)'.format(avg_rad)
