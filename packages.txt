@@ -1,8 +1,5 @@
 opencv-contrib-python
 numpy
 matplotlib
-Pillow
-mss==2.0.22
-pyautogui
 sklearn
 d3dshot

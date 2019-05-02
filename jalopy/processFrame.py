@@ -1,8 +1,5 @@
 import cv2
 import numpy as np
-# from numpy import ones, vstack
-# import matplotlib.pyplot as plt
-
 
 class Frame(object):
     def __init__(self, img):
@@ -45,5 +42,5 @@ class Frame(object):
         matrix = cv2.getPerspectiveTransform(self.screen, self.distortion)
         warped = cv2.warpPerspective(self.img, matrix, imgSize)
         warped = self.sharpenFilter(warped)
-        warped = self.contrastFilter(warped, 1.3)
+        warped = self.contrastFilter(warped, 1.0)
         return warped
