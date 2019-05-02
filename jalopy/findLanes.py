@@ -1,8 +1,9 @@
 import numpy as np
 import cv2
-from processFrame import *
+from processFrame import Frame
 
-# CODE CITATION: Inspired but heavily modified version by
+# CODE CITATION: Inspired but personally implemeted version from a few sources:
+
 # https://towardsdatascience.com/https-medium-com-priya-dwivedi-automatic-lane-detection-for-self-driving-cars-4f8b3dc0fb65
 # AND
 # https://medium.com/@cacheop/advanced-lane-detection-for-autonomous-cars-bff5390a360f
@@ -15,9 +16,11 @@ class Line():
 
     def reset(self):
         # flush all characteristics of the line
+        # print("bad last attempt")
         self.detected = False
         self.lastAttempt = []
         self.currAttempt = [np.array([False])]
+        # self.currAttempt = np.polyfit(yPoints, xPoints, 2)
         self.diffs = np.array([0, 0, 0], dtype='float')
         self.allX = None
         self.allY = None
@@ -39,19 +42,19 @@ class Line():
             lineFit = self.currAttempt
             self.detected = True
             self.counter = 0
-
             return lineFit
 
         except (TypeError, np.linalg.LinAlgError):
+            # print("error")
             lineFit = self.bestFit
             if initialAttempt:
+                # print("resetting")
                 self.reset()
             return lineFit
 
 
 def slidingSensor(curX, margin, minpix, nonzerox, nonzeroy,
                   winYBottom, winYTop, winMax, counter, side):
-
     winXBottom = curX - margin
     winXTop = curX + margin
     fairPoints = ((nonzeroy >= winYBottom) & (nonzeroy < winYTop)
@@ -65,25 +68,24 @@ def slidingSensor(curX, margin, minpix, nonzerox, nonzeroy,
                 leftSensor = False
             else:
                 rightSensor = False
-
     return fairPoints, curX
 
 
 def initialLine(img, leftLine, rightLine):
     # number of sensors
     nwindows = 35
-    margin = 100
-    minpix = 50
+    margin = 40
+    minpix = 30
     # Create empty lists to receive left and right lane pixel indices
-    leftLaneIndices = []
-    rightLaneIndices = []
+    leftIndices = []
+    rightIndices = []
     leftSensor = True
     rightSensor = True
     counter = 0
 
     # Load warped image
     warped = Frame(img)
-    binaryWarp, matrix = warped.transform()
+    binaryWarp = warped.pipeline()
 
     histogram = np.sum(
         binaryWarp[int(binaryWarp.shape[0]/2):, :], axis=0)
@@ -101,8 +103,8 @@ def initialLine(img, leftLine, rightLine):
     leftcurX = leftx_base
     rightcurX = rightx_base
 
-    # Step through the windows one by one
     for window in range(nwindows):
+        # set dimensions of each window
         winYBottom = binaryWarp.shape[0] - (window+1)*window_height
         winYTop = binaryWarp.shape[0] - window*window_height
         winMax = binaryWarp.shape[1]
@@ -116,34 +118,34 @@ def initialLine(img, leftLine, rightLine):
                                                         nonzeroy,
                                                         winYBottom, winYTop,
                                                         winMax, counter, 'right')
-            leftLaneIndices.append(fairLeftIndices)
-            rightLaneIndices.append(fairRightIndices)
+            leftIndices.append(fairLeftIndices)
+            rightIndices.append(fairRightIndices)
             counter += 1
         elif leftSensor:
             fairLeftIndices, leftcurX = slidingSensor(leftcurX, margin, minpix,
                                                       nonzerox, nonzeroy,
                                                       winYBottom, winYTop,
                                                       winMax, counter, 'left')
-            leftLaneIndices.append(fairLeftIndices)
+            leftIndices.append(fairLeftIndices)
         elif rightSensor:
             fairRightIndices, rightcurX = slidingSensor(rightcurX, margin,
                                                         minpix, nonzerox,
                                                         nonzeroy, winYBottom,
                                                         winYTop, winMax,
                                                         counter, 'right')
-            rightLaneIndices.append(fairRightIndices)
+            rightIndices.append(fairRightIndices)
         else:
             break
 
     # Concatenate the arrays of indices
-    leftLaneIndices = np.concatenate(leftLaneIndices)
-    rightLaneIndices = np.concatenate(rightLaneIndices)
+    leftIndices = np.concatenate(leftIndices)
+    rightIndices = np.concatenate(rightIndices)
 
     # Extract left and right line pixel positions
-    leftx = nonzerox[leftLaneIndices]
-    lefty = nonzeroy[leftLaneIndices]
-    rightx = nonzerox[rightLaneIndices]
-    righty = nonzeroy[rightLaneIndices]
+    leftx = nonzerox[leftIndices]
+    lefty = nonzeroy[leftIndices]
+    rightx = nonzerox[rightIndices]
+    righty = nonzeroy[rightIndices]
 
     # Fit a second order polynomial to each line
     leftFit = leftLine.lineFit(leftx, lefty, True)
@@ -159,15 +161,14 @@ def distFromCenter(line, val):
 
 
 def drawLines(img, leftLine, rightLine):
-    # rough pixel to meter conversion
-    ym_per_pix = 30/720
-    xm_per_pix = 3.7/700
+    # Fun fact: Mercedes Benz Actros is 6867 mm long
 
     warped = Frame(img)
-    binaryWarp, matrix = warped.transform()
+    binaryWarp = warped.pipeline()
 
     # if we had lanes last time
-    if leftLine.detected == False or rightLine.detected == False:
+    if leftLine.detected == False or rightLine.detected == False or\
+       not np.any(leftLine) or not np.any(rightLine):
         initialLine(img, leftLine, rightLine)
 
     leftFit = leftLine.currAttempt
@@ -177,24 +178,24 @@ def drawLines(img, leftLine, rightLine):
     nonzero = binaryWarp.nonzero()
     nonzeroy = np.array(nonzero[0])
     nonzerox = np.array(nonzero[1])
-    margin = 100
+    margin = 40
 
-    leftLaneIndices = ((nonzerox > (leftFit[0]*(nonzeroy**2) +
-                                    leftFit[1]*nonzeroy + leftFit[2] - margin)) &
-                       (nonzerox < (leftFit[0]*(nonzeroy**2) +
-                                    leftFit[1]*nonzeroy + leftFit[2] + margin)))
+    leftIndices = ((nonzerox > (leftFit[0]*(nonzeroy**2) +
+                                leftFit[1]*nonzeroy + leftFit[2] - margin)) &
+                   (nonzerox < (leftFit[0]*(nonzeroy**2) +
+                                leftFit[1]*nonzeroy + leftFit[2] + margin)))
 
-    rightLaneIndices = ((nonzerox > (rightFit[0]*(nonzeroy**2) +
-                                     rightFit[1]*nonzeroy + rightFit[2] - margin))
-                        &
-                        (nonzerox < (rightFit[0]*(nonzeroy**2) + rightFit[1]
-                                     * nonzeroy + rightFit[2] + margin)))
+    rightIndices = ((nonzerox > (rightFit[0]*(nonzeroy**2) +
+                                 rightFit[1]*nonzeroy + rightFit[2] - margin))
+                    &
+                    (nonzerox < (rightFit[0]*(nonzeroy**2) + rightFit[1]
+                                 * nonzeroy + rightFit[2] + margin)))
 
     # Set the x and y values of points on each line
-    leftx = nonzerox[leftLaneIndices]
-    lefty = nonzeroy[leftLaneIndices]
-    rightx = nonzerox[rightLaneIndices]
-    righty = nonzeroy[rightLaneIndices]
+    leftx = nonzerox[leftIndices]
+    lefty = nonzeroy[leftIndices]
+    rightx = nonzerox[rightIndices]
+    righty = nonzeroy[rightIndices]
 
     # Fit a second order polynomial to each again.
     leftFit = leftLine.lineFit(leftx, lefty, False)
@@ -210,9 +211,9 @@ def drawLines(img, leftLine, rightLine):
     window_img = np.zeros_like(output)
 
     # Color in left and right line pixels
-    output[nonzeroy[leftLaneIndices], nonzerox[leftLaneIndices]] = [255, 0, 0]
-    output[nonzeroy[rightLaneIndices],
-           nonzerox[rightLaneIndices]] = [0, 0, 255]
+    output[nonzeroy[leftIndices], nonzerox[leftIndices]] = [255, 0, 0]
+    output[nonzeroy[rightIndices],
+           nonzerox[rightIndices]] = [0, 0, 255]
 
     # Generate a polygon to illustrate the search window area
     # And recast the x and y points into usable format for cv2.fillPoly()
@@ -233,66 +234,90 @@ def drawLines(img, leftLine, rightLine):
     rightR = (
         (1 + (2*rightFit[0]*expectedYCurve + rightFit[1])**2)**1.5) / np.absolute(2*rightFit[0])
 
-    leftFitCritical = np.polyfit(leftLine.allY*ym_per_pix,
-                                 leftLine.allX*xm_per_pix, 2)
-    rightFitCritical = np.polyfit(rightLine.allY*ym_per_pix,
-                                  rightLine.allX*xm_per_pix, 2)
+    leftFitCritical = np.polyfit(leftLine.allY,
+                                 leftLine.allX, 2)
+    rightFitCritical = np.polyfit(rightLine.allY,
+                                  rightLine.allX, 2)
 
     # Calculate the new radii of curvature
-    leftR = ((1 + (2*leftFitCritical[0]*expectedYCurve*ym_per_pix +
+    leftR = ((1 + (2*leftFitCritical[0]*expectedYCurve +
                    leftFitCritical[1])**2)**1.5) / np.absolute(2*leftFitCritical[0])
 
-    rightR = ((1 + (2*rightFitCritical[0]*expectedYCurve*ym_per_pix +
+    rightR = ((1 + (2*rightFitCritical[0]*expectedYCurve +
                     rightFitCritical[1])**2)**1.5) / np.absolute(2*rightFitCritical[0])
 
-    avg_rad = round(np.mean([leftR, rightR]), 0)
-    rad_text = 'Radius of Curvature = {}(m)'.format(avg_rad)
+    avgRadius = round(np.mean([leftR, rightR]), 0)
+
+    radiusText = 'Radius = %s' % (avgRadius)
 
     middle_of_image = img.shape[1] / 2
-    carPosition = middle_of_image * xm_per_pix
+    carPosition = middle_of_image
 
-    leftLine_base = distFromCenter(leftFitCritical, img.shape[0] * ym_per_pix)
+    leftLine_base = distFromCenter(leftFitCritical, img.shape[0])
     rightLine_base = distFromCenter(
-        rightFitCritical, img.shape[0] * ym_per_pix)
-    lane_mid = (leftLine_base+rightLine_base)/2
+        rightFitCritical, img.shape[0])
+    laneCenter = (leftLine_base+rightLine_base)/2
 
-    centerDeviation = lane_mid - carPosition
+    centerDeviation = laneCenter - carPosition
     if centerDeviation >= 0:
-        center_text = '{} meters left of center'.format(
+        centerText = '%s (left)' % (
             round(centerDeviation, 2))
     else:
-        center_text = '{} meters right of center'.format(
-            round(-centerDeviation, 2))
+        centerText = '%s (right)' % (
+            round(centerDeviation, 2))
+
+    # print(radiusText, centerText)
+
+    if avgRadius > 50000 or abs(centerDeviation) > 100:
+        # restart if the radius and the center deviation become something
+        # ridiculous
+        # leftLine = Line()
+        # rightLine = Line()
+        initialLine(img, leftLine, rightLine)
+    
 
     # Invert the transform matrix from birds_eye (to later make the image back
-    #   to normal below)
-    Minv = np.linalg.inv(matrix)
+    # to normal below)
+    Minv = warped.createInverseMatrix()
 
     # Create an image to draw the lines on
     blankWarp = np.zeros_like(binaryWarp).astype(np.uint8)
     colorWarp = np.dstack((blankWarp, blankWarp, blankWarp))
 
     # Recast the x and y points into usable format for cv2.fillPoly()
-    pts_left = np.array([np.transpose(np.vstack([leftXFit, fity]))])
-    pts_right = np.array(
+    pointsLeft = np.array([np.transpose(np.vstack([leftXFit, fity]))])
+    pointsRight = np.array(
         [np.flipud(np.transpose(np.vstack([rightXFit, fity])))])
-    pts = np.hstack((pts_left, pts_right))
+    pts = np.hstack((pointsLeft, pointsRight))
 
     # Draw the lane onto the warped blank image
-    cv2.fillPoly(colorWarp, np.int_([pts]), (0, 255, 0))
+    cv2.fillPoly(colorWarp, np.int_([pts]), (26, 143, 227))
 
-    newwarp = cv2.warpPerspective(
+    newWarp = cv2.warpPerspective(
         colorWarp, Minv, (img.shape[1], img.shape[0]))
 
-    result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
-    return result
+    # exitText = "Press Q to end Jalopy"
+    
+    # font = cv2.FONT_HERSHEY_DUPLEX
+    # cv2.putText(newWarp, exitText, (10,50), font, 1,(255,255,255),2)
+
+    # warp = warped.transform()[0]
+    # warp = cv2.cvtColor(warp, cv2.COLOR_BGR2RGB)
+
+    result = cv2.addWeighted(img, 1, newWarp, 0.6, 0)
+    return result, avgRadius, centerDeviation
+
+
+leftLine = Line()
+rightLine = Line()
 
 
 def processImage(image):
-    # leftLine = Line()
-    # rightLine = Line()
+    global leftLine, rightLine
+    # print(leftLine, rightLine)
+    finishedImage, avgRadius, centerDeviation = drawLines(image,
+                                                      leftLine, rightLine)
 
-    # result = drawLines(image, leftLine, rightLine)
-    result = pipeline(image)
-
-    return result
+    # result = Frame(image)
+    # result = result.pipeline()
+    return finishedImage, avgRadius, centerDeviation

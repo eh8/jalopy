@@ -5,6 +5,7 @@ def straight():
     PressKey(W)
     ReleaseKey(A)
     ReleaseKey(D)
+    ReleaseKey(S)
 
 
 def left():
@@ -16,7 +17,7 @@ def right():
     PressKey(D)
     ReleaseKey(A)
 
-# def stop():
-#     ReleaseKey(W)
-#     ReleaseKey(A)
-#     ReleaseKey(D)
+
+def slow():
+    ReleaseKey(W)
+    PressKey(S)

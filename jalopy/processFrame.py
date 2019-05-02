@@ -5,16 +5,20 @@ import numpy as np
 class Frame(object):
     def __init__(self, img):
         self.img = img
-        self.imgHeight = 200
+        self.imgHeight = 600
         self.imgWidth = 800
-        self.leftLane = 375
-        self.rightLane = 425
+        self.leftLane = 360
+        self.rightLane = 420
         self.screen = np.float32(
-            [[0, self.imgHeight+315], [self.imgWidth, self.imgHeight+315],
-             [0, 315], [self.imgWidth, 315]])
-        self.distortion = np.float32(
-            [[self.leftLane, self.imgHeight], [self.rightLane, self.imgHeight],
-             [0, 0], [self.imgWidth, 0]])
+            [[430, 320],
+             [800, 550],
+             [0, 550],
+             [370, 320],])
+        self.offset = 200
+        self.distortion = np.float32([[600, 0],
+                                      [600, 600],
+                                      [200, 600],
+                                      [200, 0]])
 
     def makeFrame(self, img):
         return Frame(img)
@@ -43,36 +47,51 @@ class Frame(object):
         matrix = cv2.getPerspectiveTransform(self.screen, self.distortion)
         warped = cv2.warpPerspective(self.img, matrix, imgSize)
         warped = self.sharpenFilter(warped)
-        warped = self.contrastFilter(warped, 1.0)
+        warped = self.contrastFilter(warped, 1.3)
         return warped, matrix
 
-    def pipeline(self, s_thresh=(125, 255), sx_thresh=(10, 100),
-                 R_thresh=(200, 255), sobel_kernel=3):
+    def pipeline(self):
+        s_thresh = 150, 255
+        sx_thresh = 10, 100
+        R_thresh = 100, 255
+        sobel_kernel = 3
 
-        warp, matrix = self.transform()
+        warp = Frame(self.img)
+        warp = self.transform()[0]
+        # warp = cv2.cvtColor(warp, cv2.COLOR_BGR2RGB)
         R = warp[:, :, 0]
 
         hls = cv2.cvtColor(warp, cv2.COLOR_RGB2HLS).astype(np.float)
+        # split into three separate channels for discrimination
+        hChannel = hls[:, :, 0]
         lChannel = hls[:, :, 1]
         sChannel = hls[:, :, 2]
 
+        # Generate sobel edge mask - this filter checks for edges
         sobelx = cv2.Sobel(lChannel, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
         abs_sobelx = np.absolute(sobelx)
         scaled_sobelx = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
 
-        sxbinary = np.zeros_like(scaled_sobelx)
-        sxbinary[(scaled_sobelx >= sx_thresh[0])
+        # Generate sobel binary filter - all bits between these two thresholds
+        # are selected
+        sxBinary = np.zeros_like(scaled_sobelx)
+        sxBinary[(scaled_sobelx >= sx_thresh[0])
                  & (scaled_sobelx <= sx_thresh[1])] = 1
 
+        # This filter checks for brightness
         rBinary = np.zeros_like(R)
         rBinary[(R >= R_thresh[0]) & (R <= R_thresh[1])] = 1
 
-        sBinary = np.zeros_like(sChannel)
-        sBinary[(sChannel >= s_thresh[0]) & (sChannel <= s_thresh[1])] = 1
+        # This filter kinda sucks because it only tracks color
+        # sBinary = np.zeros_like(sChannel)
+        # sBinary[(sChannel >= s_thresh[0]) & (sChannel <= s_thresh[1])] = 1
 
-        compositeImage = np.zeros_like(sxbinary)
-        compositeImage[((sBinary == 1) & (sxbinary == 1))
-                       | ((sxbinary == 1) & (rBinary == 1))
-                       | ((sBinary == 1) & (rBinary == 1))] = 1
-
+        compositeImage = np.zeros_like(rBinary)
+        compositeImage[((sxBinary == 1) & (rBinary == 1))] = 1
+        compositeImage = 255 * compositeImage
         return compositeImage
+
+    def createInverseMatrix(self):
+        inverseMatrix = cv2.getPerspectiveTransform(self.distortion,
+                                                    self.screen)
+        return inverseMatrix
