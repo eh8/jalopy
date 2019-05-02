@@ -4,3 +4,4 @@
 *.pyc
 jalopy/test.py
 jalopy/mappings.txt
+deprecated/
