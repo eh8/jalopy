@@ -3,3 +3,4 @@
 # no pycache
 *.pyc
 jalopy/test.py
+jalopy/mappings.txt

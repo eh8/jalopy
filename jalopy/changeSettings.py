@@ -24,7 +24,7 @@ def findConfig():
     return path
 
 
-def checkDimensions():
+def checkConfig():
     # See if the user has ran Jalopy before
     path = findConfig()
     config = readFile(path)
@@ -32,34 +32,57 @@ def checkDimensions():
     for line in config.splitlines():
         # If anomaly detected in game parameters, then break immediately
         # and rewrite all settings
-        if line.startswith('user r_mode_height'):
+
+        # Game height
+        if line.startswith('user r_mode_height') or\
+           line.startswith('uset r_mode_height'):
             if '600' not in line:
                 return False
-        elif line.startswith('user r_mode_width'):
+        # Game width
+        elif line.startswith('user r_mode_width') or\
+                line.startswith('uset r_mode_width'):
             if '800' not in line:
                 return False
-        elif line.startswith('user r_fullscreen'):
+        # Game fullscreen
+        elif line.startswith('user r_fullscreen') or\
+                line.startswith('uset r_fullscreen'):
             if '0' not in line:
                 return False
     return True
 
 
-def changeDimensions():
+def modifyConfig():
     # Change game parameters if not
     path = findConfig()
     config = readFile(path)
     result = ""
     for line in config.splitlines():
-        if line.startswith('user r_mode_height'):
-            lineToAdd = 'user r_mode_height "600"\n'
+        # Game height
+        if line.startswith('user r_mode_height') or\
+                line.startswith('uset r_mode_height'):
+            lineToAdd = 'uset r_mode_height "600"\n'
             result += lineToAdd
-        elif line.startswith('user r_mode_width'):
-            lineToAdd = 'user r_mode_width "800"\n'
+        # Game width
+        elif line.startswith('user r_mode_width') or\
+                line.startswith('uset r_mode_width'):
+            lineToAdd = 'uset r_mode_width "800"\n'
             result += lineToAdd
-        elif line.startswith('user r_fullscreen'):
-            lineToAdd = 'user r_fullscreen "0"\n'
+        # Game fullscreen
+        elif line.startswith('user r_fullscreen') or\
+                line.startswith('uset r_fullscreen'):
+            lineToAdd = 'uset r_fullscreen "0"\n'
             result += lineToAdd
+        # Other parameters
         else:
             line = line + '\n'
             result += line
     writeFile(path, result)
+
+
+def main():
+    if not checkConfig():
+        modifyConfig()
+
+
+if __name__ == '__main__':
+    main()

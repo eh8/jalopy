@@ -15,14 +15,7 @@ Self-driving system for Euro Truck Simulator 2
 
 ## How to run Jalopy
 * _(optional)_ If you are running Jalopy on laptop, you probably want to plug in your computer to prevent battery consumption conservation from slowing down the game/OpenCV/Jalopy
-<!-- 1. Run Euro Truck Simulator 2 at 800x600 resolution by changing your ```config.cfg``` file by modifying this lines to the specified values:
-~~~
-uset r_fullscreen "0"
-uset r_mode_height "600"
-uset r_mode_width "800"
-~~~
-
-Ideally, Jalopy could do this for you  -->
+* _(note)_ Run Euro Truck Simulator 2 at the highest possible settings for your system (ultra mode is best)
 1. Place Euro Truck Simulator 2 to the upper left corner of your screen
 1. Navigate to the main directory with ```cd jalopy```
 1. Run the main .py file with ```python main.py```
