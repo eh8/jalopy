@@ -1,4 +1,7 @@
 # jalopy
+
+![](https://media.giphy.com/media/1qj65fHUu0gvZRvkhS/giphy.gif)
+
 Self-driving system for Euro Truck Simulator 2.
 
 ## Can I run it?
