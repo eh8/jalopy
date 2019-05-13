@@ -13,6 +13,7 @@ Self-driving system for Euro Truck Simulator 2.
 * _(optional)_ Install [Anaconda](https://anaconda.com) for ease of installation
 * _(conditional)_ If you use Visual Studio Code, add ```    "python.linting.pylintArgs": ["--extension-pkg-whitelist=cv2"]
 ``` to your ```settings.json``` file
+1. Clone this repo
 1. Make sure you have pip installed by running ```pip --version``` on your computer. If not, navigate to the _jalopy_ folder and run ```python get-pip.py```
 1. Install necessary packages (OpenCV, sklearn, etc.) with ```pip install -r packages.txt```
 
