@@ -25,8 +25,8 @@ Self-driving system for Euro Truck Simulator 2.
 1. Run the main .py file with ```python main.py```
 
 ## Update history
-* ~~TP1 : Quick demo of lane detection, working on streaming the game output to the OpenCV feed. Using personal gameplay and YouTube videos for testing purposes, transcoding on Handshake for optimal filesize and resolution.
-* ~~TP2 : Working self-driving demo with lane-slope heuristic. However, this heuristic is awful and should be discarded in favor of a cNN (coming TP3)
+* ~~TP1 : Quick demo of lane detection, working on streaming the game output to the OpenCV feed. Using personal gameplay and YouTube videos for testing purposes, transcoding on Handshake for optimal filesize and resolution.~~
+* ~~TP2 : Working self-driving demo with lane-slope heuristic. However, this heuristic is awful and should be discarded in favor of a cNN (coming TP3)~~
 * TP3 : Better lane-finding and steering logic heuristics, runs in real-time without cNN
 
 ## Shortcut commands
