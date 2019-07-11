@@ -19,14 +19,15 @@ Self-driving system for Euro Truck Simulator 2.
 
 ## How to run Jalopy
 * _(optional)_ If you are running Jalopy on laptop, you probably want to plug in your computer to prevent battery consumption conservation from slowing down the game/OpenCV/Jalopy
-* _(note)_ Run Euro Truck Simulator 2 at the highest possible settings for your system (ultra mode is best)
+* _(note)_ Run Euro Truck Simulator 2 at the highest possible settings for your system (ultra mode is best). This increases the smoothness (anti-aliasing) of your game and makes Jalopy happier.
 1. Place Euro Truck Simulator 2 to the upper left corner of your screen
 1. Navigate to the main directory with ```cd jalopy```
 1. Run the main .py file with ```python main.py```
 
 ## Update history
-* TP1 : Quick demo of lane detection, working on streaming the game output to the OpenCV feed. Using personal gameplay and YouTube videos for testing purposes, transcoding on Handshake for optimal filesize and resolution.
-* TP2 : Working self-driving demo with lane-slope heuristic. However, this heuristic is awful and should be discarded in favor of a cNN (coming TP3)
+* ~~TP1 : Quick demo of lane detection, working on streaming the game output to the OpenCV feed. Using personal gameplay and YouTube videos for testing purposes, transcoding on Handshake for optimal filesize and resolution.
+* ~~TP2 : Working self-driving demo with lane-slope heuristic. However, this heuristic is awful and should be discarded in favor of a cNN (coming TP3)
+* TP3 : Better lane-finding and steering logic heuristics, runs in real-time without cNN
 
 ## Shortcut commands
 * There are no shortcut commands for this program
